@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 
 namespace SocketHandler
 {
-    class Controller
+    public class Controller
     {
         public const int MAXIMUM_MESSAGE_LENGTH = 1024;
 
         /// <summary>
         /// This will be called when the socket receives data.
         /// </summary>
-        public Action<int, byte[]> onReceiveData = null;
+        public Action<string> onReceiveData = null;
 
         /// <summary>
         /// Gets called when the controller is shut down.
@@ -25,6 +23,8 @@ namespace SocketHandler
 
         private Socket socket = null;
         private Thread receiveData = null;
+
+        private string message = "";
 
         private bool isRunning = false;
         /// <summary>
@@ -76,7 +76,24 @@ namespace SocketHandler
                     byte[] buffer = new byte[MAXIMUM_MESSAGE_LENGTH];
                     int numBytes = socket.Receive(buffer);
 
-                    onReceiveData(numBytes, buffer);
+                    string data = Encoding.Unicode.GetString(buffer, 0, numBytes);
+                    bool foundEndline = true;
+                    while (foundEndline)
+                    {
+                        foundEndline = false;
+                        for (int i = 0; i < data.Length; ++i)
+                        {
+                            if (data[i] == '\n')
+                            {
+                                message += data.Substring(0, i);
+                                data = data.Substring(i + 1, data.Length - (i + 1));
+                                onReceiveData(message);
+                                message = "";
+                                foundEndline = true;
+                                break;
+                            }
+                        }
+                    }
                     Thread.Sleep(0);
                 }
             }
@@ -102,16 +119,15 @@ namespace SocketHandler
         /// Sends data through the socket.
         /// </summary>
         /// <param name="data">The byte data to send through the socket.</param>
-        /// <param name="length">How many bytes from the data parameter to send through.</param>
-        public void SendData(byte[] data, int length)
+        public void SendData(string data)
         {
             try
             {
-                if (length > MAXIMUM_MESSAGE_LENGTH)
+                if (Encoding.Unicode.GetByteCount(data) > MAXIMUM_MESSAGE_LENGTH)
                 {
                     Console.WriteLine("Trying to send data larger than the maximum message length!!!");
                 }
-                socket.Send(data, length, SocketFlags.None);
+                socket.Send(Encoding.Unicode.GetBytes(data));
             }
             catch (SocketException e)
             {

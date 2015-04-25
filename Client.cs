@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 
 namespace SocketHandler
 {
-    class Client
+    public class Client
     {
         private Socket clientSocket = null;
         private Controller connectionManager = null;
@@ -17,7 +13,7 @@ namespace SocketHandler
         /// Gets called when the connection manager's onReceiveData function is called.
         /// Use this to handle incoming client data.
         /// </summary>
-        public Action<int, byte[]> onReceiveData = null;
+        public Action<string> onReceiveData = null;
 
         /// <summary>
         /// Gets called when the client socket is shut down.
@@ -85,9 +81,9 @@ namespace SocketHandler
         /// </summary>
         /// <param name="data">The byte data to send through the socket.</param>
         /// <param name="length">How many bytes from the data parameter to send through.</param>
-        public void SendData(byte[] data, int length)
+        public void SendData(string message)
         {
-            connectionManager.SendData(data, length);
+            connectionManager.SendData(message);
         }
 
         /// <summary>
