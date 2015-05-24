@@ -77,6 +77,8 @@ namespace SocketHandler
                     int numBytes = socket.Receive(buffer);
 
                     string data = Encoding.Unicode.GetString(buffer, 0, numBytes);
+
+                    // Parse the data for endlines until the end of the data is reached.
                     bool foundEndline = true;
                     while (foundEndline)
                     {
@@ -85,8 +87,8 @@ namespace SocketHandler
                         {
                             if (data[i] == '\n')
                             {
-                                message += data.Substring(0, i);
-                                data = data.Substring(i + 1, data.Length - (i + 1));
+                                message += data.Substring(0, i - 1);    // Don't keep the endline character
+                                data = data.Substring(i + 1, data.Length - (i + 1));    // Skip endline character
                                 onReceiveData(message);
                                 message = "";
                                 foundEndline = true;
@@ -94,6 +96,7 @@ namespace SocketHandler
                             }
                         }
                     }
+                    message += data;
                     Thread.Sleep(0);
                 }
             }
@@ -117,12 +120,14 @@ namespace SocketHandler
 
         /// <summary>
         /// Sends data through the socket.
+        /// DO NOT send endlines through this controller, it will be parsed as separate messages!
         /// </summary>
         /// <param name="data">The byte data to send through the socket.</param>
         public void SendData(string data)
         {
             try
             {
+                data = data + '\n'; // Add an endline to signify the end of a message
                 if (Encoding.Unicode.GetByteCount(data) > MAXIMUM_MESSAGE_LENGTH)
                 {
                     Console.WriteLine("Trying to send data larger than the maximum message length!!!");

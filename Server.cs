@@ -53,7 +53,16 @@ namespace SocketHandler
             try
             {
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddress = ipHostInfo.AddressList[0];
+                IPAddress ipAddress = null;
+                foreach (IPAddress addr in ipHostInfo.AddressList)
+                {
+                    if (addr.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ipAddress = addr;
+                        break;
+                    }
+                }
+                //IPAddress ipAddress = ipHostInfo.AddressList[0];
                 IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
