@@ -8,6 +8,7 @@ namespace SocketHandler
 {
     public class Controller
     {
+        public const bool DEBUG = true;
         public const int MAXIMUM_MESSAGE_LENGTH = 1024;
 
         /// <summary>
@@ -23,6 +24,7 @@ namespace SocketHandler
 
         private Socket socket = null;
         private Thread receiveData = null;
+        private IPAddress connectedAddr = null;
 
         private string message = "";
 
@@ -54,9 +56,10 @@ namespace SocketHandler
         public Controller(Socket s)
         {
             socket = s;
-
+            connectedAddr = ((IPEndPoint)socket.RemoteEndPoint).Address;
             receiveData = new Thread(StartReceivingData);
             receiveData.Start();
+            Debug("Started new socket controller");
         }
 
         ~Controller()
@@ -74,9 +77,10 @@ namespace SocketHandler
                 while (true)
                 {
                     byte[] buffer = new byte[MAXIMUM_MESSAGE_LENGTH];
-                    int numBytes = socket.Receive(buffer);
+                    int numBytes = socket.Receive(buffer, 32, SocketFlags.None);
 
                     string data = Encoding.Unicode.GetString(buffer, 0, numBytes);
+                    Debug(data);
 
                     // Parse the data for endlines until the end of the data is reached.
                     bool foundEndline = true;
@@ -87,8 +91,9 @@ namespace SocketHandler
                         {
                             if (data[i] == '\n')
                             {
-                                message += data.Substring(0, i - 1);    // Don't keep the endline character
+                                message += data.Substring(0, i);    // Don't keep the endline character
                                 data = data.Substring(i + 1, data.Length - (i + 1));    // Skip endline character
+                                Debug("Recieved Message: " + message);
                                 onReceiveData(message);
                                 message = "";
                                 foundEndline = true;
@@ -127,6 +132,7 @@ namespace SocketHandler
         {
             try
             {
+                Debug("Sending Data: " + data);
                 data = data + '\n'; // Add an endline to signify the end of a message
                 if (Encoding.Unicode.GetByteCount(data) > MAXIMUM_MESSAGE_LENGTH)
                 {
@@ -154,6 +160,7 @@ namespace SocketHandler
         /// <param name="e">The exception that caused this function to be called. Can be null.</param>
         private void CloseConnection(Exception e)
         {
+            Debug("Connection was closed");
             if (receiveData != null)
             {
                 receiveData.Abort();
@@ -162,6 +169,14 @@ namespace SocketHandler
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
+            }
+        }
+
+        private void Debug(string s)
+        {
+            if (DEBUG)
+            {
+                Console.WriteLine(connectedAddr.ToString() + ": " + s);
             }
         }
     }

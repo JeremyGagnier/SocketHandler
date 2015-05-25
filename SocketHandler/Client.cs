@@ -101,9 +101,15 @@ namespace SocketHandler
             }
             if (clientSocket != null)
             {
-                clientSocket.Shutdown(SocketShutdown.Both);
-                clientSocket.Close();
-                clientSocket = null;
+                try
+                {
+                    clientSocket.Shutdown(SocketShutdown.Both);
+                    clientSocket.Close();
+                    clientSocket = null;
+                }
+                catch (Exception)
+                {
+                }
             }
             if (onCloseConnection != null)
             {

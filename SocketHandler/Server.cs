@@ -7,6 +7,7 @@ namespace SocketHandler
 {
     public class Server
     {
+        private const bool DEBUG = true;
         private const int MAX_INCOMING_CONNECTION_QUEUE = 16;
 
         private Socket serverSocket = null;
@@ -62,12 +63,13 @@ namespace SocketHandler
                         break;
                     }
                 }
-                //IPAddress ipAddress = ipHostInfo.AddressList[0];
+                Debug("Attempting to bind to address " + ipAddress.ToString() + " on port " + port.ToString());
                 IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 serverSocket.Bind(localEndPoint);
                 serverSocket.Listen(MAX_INCOMING_CONNECTION_QUEUE);
+                Debug("Bind successful, now listening.");
 
                 isRunning = true;
 
@@ -100,6 +102,8 @@ namespace SocketHandler
                     Socket newConnection = serverSocket.Accept();
                     if (onNewConnection != null)
                     {
+                        IPEndPoint remoteIp = newConnection.RemoteEndPoint as IPEndPoint;
+                        Debug("Connected to a new user at address " + remoteIp.Address.ToString());
                         onNewConnection(newConnection);
                     }
                     Thread.Sleep(0);
@@ -129,6 +133,7 @@ namespace SocketHandler
         /// </summary>
         private void CloseConnection(Exception e)
         {
+            Debug("Connection was closed");
             if (listenerThread != null)
             {
                 listenerThread.Abort();
@@ -136,13 +141,27 @@ namespace SocketHandler
             }
             if (serverSocket != null)
             {
-                serverSocket.Shutdown(SocketShutdown.Both);
-                serverSocket.Close();
-                serverSocket = null;
+                try
+                {
+                    serverSocket.Shutdown(SocketShutdown.Both);
+                    serverSocket.Close();
+                    serverSocket = null;
+                }
+                catch (Exception)
+                {
+                }
             }
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
+            }
+        }
+
+        static void Debug(string s)
+        {
+            if (DEBUG)
+            {
+                Console.WriteLine("SERVER: " + s);
             }
         }
     }
