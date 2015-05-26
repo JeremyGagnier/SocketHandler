@@ -6,6 +6,8 @@ namespace SocketHandler
 {
     public class Client
     {
+        public const bool DEBUG = true;
+
         private Socket clientSocket = null;
         private Controller connectionManager = null;
 
@@ -66,8 +68,7 @@ namespace SocketHandler
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to initialize client socket:");
-                Console.WriteLine(e);
+                Debug("Failed to initialize client socket:\n" + e.ToString());
             }
         }
 
@@ -114,6 +115,14 @@ namespace SocketHandler
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
+            }
+        }
+
+        private void Debug(string s)
+        {
+            if (DEBUG)
+            {
+                Console.WriteLine("CLIENT: " + s);
             }
         }
     }

@@ -9,7 +9,6 @@ namespace SocketHandler
     public class Controller
     {
         public const bool DEBUG = true;
-        public const int MAXIMUM_MESSAGE_LENGTH = 1024;
 
         /// <summary>
         /// This will be called when the socket receives data.
@@ -76,11 +75,20 @@ namespace SocketHandler
             {
                 while (true)
                 {
-                    byte[] buffer = new byte[MAXIMUM_MESSAGE_LENGTH];
-                    int numBytes = socket.Receive(buffer, 32, SocketFlags.None);
+                    byte[] buffer = new byte[16];
+                    int numBytes = socket.Receive(buffer, 16, SocketFlags.None);
+                    if (numBytes == 1 && buffer[0] == 0)
+                    {
+                        isRunning = false;
+                    }
 
                     string data = Encoding.Unicode.GetString(buffer, 0, numBytes);
-                    Debug(data);
+                    string bufferString = buffer[0].ToString();
+                    for (int i = 1; i < numBytes; ++i)
+                    {
+                        bufferString += "," + buffer[i];
+                    }
+                    Debug(data + ": " + bufferString);
 
                     // Parse the data for endlines until the end of the data is reached.
                     bool foundEndline = true;
@@ -107,18 +115,16 @@ namespace SocketHandler
             }
             catch(SocketException e)
             {
-                Console.WriteLine("Encountered a socket error when trying to recieve data:");
-                Console.WriteLine(e);
+                Debug("Encountered a socket error when trying to recieve data (socket was likely closed):\n" + e.ToString());
                 CloseConnection(e);
             }
             catch (ThreadAbortException)
             {
-                Console.WriteLine("Receive Data thread shut down successfully.");
+                Debug("Receive Data thread shut down successfully.");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Receive Data thread encountered an error:");
-                Console.WriteLine(e);
+                Debug("Receive Data thread encountered an error:\n" + e.ToString());
                 CloseConnection(e);
             }
         }
@@ -134,21 +140,16 @@ namespace SocketHandler
             {
                 Debug("Sending Data: " + data);
                 data = data + '\n'; // Add an endline to signify the end of a message
-                if (Encoding.Unicode.GetByteCount(data) > MAXIMUM_MESSAGE_LENGTH)
-                {
-                    Console.WriteLine("Trying to send data larger than the maximum message length!!!");
-                }
                 socket.Send(Encoding.Unicode.GetBytes(data));
             }
             catch (SocketException e)
             {
-                Console.WriteLine("Encountered a socket error when trying to send data. Likely caused by a disconnect.");
+                Debug("Encountered a socket error when trying to send data. Likely caused by a disconnect.");
                 CloseConnection(e);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Encountered an unexpected error when trying to send data:");
-                Console.WriteLine(e);
+                Debug("Encountered an unexpected error when trying to send data:\n" + e.ToString());
                 CloseConnection(e);
             }
         }

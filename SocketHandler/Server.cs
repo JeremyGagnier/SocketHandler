@@ -79,8 +79,7 @@ namespace SocketHandler
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to initialize server socket:");
-                Console.WriteLine(e);
+                Debug("Failed to initialize server socket:\n" + e.ToString());
             }
         }
 
@@ -111,18 +110,16 @@ namespace SocketHandler
             }
             catch (SocketException e)
             {
-                Console.WriteLine("Encountered a socket error when trying to accept new connections:");
-                Console.WriteLine(e);
+                Debug("Encountered a socket error when trying to accept new connections:\n" + e.ToString());
                 CloseConnection(e);
             }
             catch (ThreadAbortException)
             {
-                Console.WriteLine("Listener Thread shut down successfully.");
+                Debug("Listener Thread shut down successfully.");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Listener Thread encountered an error:");
-                Console.WriteLine(e);
+                Debug("Listener Thread encountered an error:\n" + e.ToString());
                 CloseConnection(e);
             }
         }
