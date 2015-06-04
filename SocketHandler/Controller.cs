@@ -90,17 +90,17 @@ namespace SocketHandler
                     }
                     Debug(data + ": " + bufferString);
 
-                    // Parse the data for endlines until the end of the data is reached.
+                    // Parse the data for end message identifiers until the end of the data is reached.
                     bool foundEndline = true;
                     while (foundEndline)
                     {
                         foundEndline = false;
                         for (int i = 0; i < data.Length; ++i)
                         {
-                            if (data[i] == '\n')
+                            if (data[i] == (char)0)
                             {
-                                message += data.Substring(0, i);    // Don't keep the endline character
-                                data = data.Substring(i + 1, data.Length - (i + 1));    // Skip endline character
+                                message += data.Substring(0, i);    // Don't keep the end message identifier
+                                data = data.Substring(i + 1, data.Length - (i + 1));
                                 Debug("Recieved Message: " + message);
                                 onReceiveData(message);
                                 message = "";
@@ -131,7 +131,6 @@ namespace SocketHandler
 
         /// <summary>
         /// Sends data through the socket.
-        /// DO NOT send endlines through this controller, it will be parsed as separate messages!
         /// </summary>
         /// <param name="data">The byte data to send through the socket.</param>
         public void SendData(string data)
@@ -139,7 +138,7 @@ namespace SocketHandler
             try
             {
                 Debug("Sending Data: " + data);
-                data = data + '\n'; // Add an endline to signify the end of a message
+                data = data + (char)0; // Add an end message identifier
                 socket.Send(Encoding.Unicode.GetBytes(data));
             }
             catch (SocketException e)
