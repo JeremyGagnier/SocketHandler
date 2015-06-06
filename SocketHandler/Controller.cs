@@ -101,7 +101,7 @@ namespace SocketHandler
                             {
                                 message += data.Substring(0, i);    // Don't keep the end message identifier
                                 data = data.Substring(i + 1, data.Length - (i + 1));
-                                Debug("Recieved Message: " + message);
+                                Debug("Received Message: " + message);
                                 onReceiveData(message);
                                 message = "";
                                 foundEndline = true;
@@ -115,7 +115,7 @@ namespace SocketHandler
             }
             catch(SocketException e)
             {
-                Debug("Encountered a socket error when trying to recieve data (socket was likely closed):\n" + e.ToString());
+                Debug("Encountered a socket error when trying to receive data:\n" + e.ToString());
                 CloseConnection(e);
             }
             catch (ThreadAbortException)
