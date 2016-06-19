@@ -1,2 +1,3 @@
-SocketHandler/bin/
-SocketHandler/obj/
+*.sln
+*.config
+*.csproj
