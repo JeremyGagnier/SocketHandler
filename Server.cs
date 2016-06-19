@@ -25,23 +25,21 @@ namespace SocketHandler
         /// </summary>
         public Action<Exception> onCloseConnection = null;
 
-        private bool isRunning = false;
-        /// <summary>
-        /// Set this to false to shut down the server.
-        /// </summary>
-        public bool IsRunning
+        private bool _isRunning = false;
+        public bool isRunning
         {
             get
             {
-                return isRunning;
+                return _isRunning;
             }
-            set
+        }
+
+        public void Stop()
+        {
+            _isRunning = false;
+            if (serverSocket != null)
             {
-                isRunning = value;
-                if (!isRunning && serverSocket != null)
-                {
-                    CloseConnection(null);
-                }
+                CloseConnection(null);
             }
         }
 
@@ -71,7 +69,7 @@ namespace SocketHandler
                 serverSocket.Listen(MAX_INCOMING_CONNECTION_QUEUE);
                 Debug("Bind successful, now listening.");
 
-                isRunning = true;
+                _isRunning = true;
 
                 // Start the ReceiveConnections function
                 listenerThread = new Thread(ReceiveConnections);
@@ -85,7 +83,7 @@ namespace SocketHandler
 
         ~Server()
         {
-            IsRunning = false;
+            Stop();
         }
 
         /// <summary>

@@ -27,23 +27,21 @@ namespace SocketHandler
 
         private string message = "";
 
-        private bool isRunning = false;
-        /// <summary>
-        /// Set this to false to shut down the controller.
-        /// </summary>
-        public bool IsRunning
+        private bool _isRunning = false;
+        public bool isRunning
         {
             get
             {
-                return isRunning;
+                return _isRunning;
             }
-            set
+        }
+
+        public void Stop()
+        {
+            _isRunning = false;
+            if (receiveData != null)
             {
-                isRunning = value;
-                if (!isRunning && receiveData != null)
-                {
-                    CloseConnection(null);
-                }
+                CloseConnection(null);
             }
         }
 
@@ -63,7 +61,7 @@ namespace SocketHandler
 
         ~Controller()
         {
-            IsRunning = false;
+            Stop();
         }
 
         /// <summary>
@@ -79,7 +77,7 @@ namespace SocketHandler
                     int numBytes = socket.Receive(buffer, 16, SocketFlags.None);
                     if (numBytes == 1 && buffer[0] == 0)
                     {
-                        isRunning = false;
+                        Stop();
                     }
 
                     string data = Encoding.Unicode.GetString(buffer, 0, numBytes);

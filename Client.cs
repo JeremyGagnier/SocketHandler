@@ -23,23 +23,21 @@ namespace SocketHandler
         /// </summary>
         public Action<Exception> onCloseConnection = null;
 
-        private bool isRunning = false;
-        /// <summary>
-        /// Set this to false to shut down the client connection.
-        /// </summary>
-        public bool IsRunning
+        private bool _isRunning = false;
+        public bool isRunning
         {
             get
             {
-                return isRunning;
+                return _isRunning;
             }
-            set
+        }
+
+        public void Stop()
+        {
+            _isRunning = false;
+            if (clientSocket != null)
             {
-                isRunning = value;
-                if (!isRunning && clientSocket != null)
-                {
-                    CloseConnection(null);
-                }
+                CloseConnection(null);
             }
         }
 
@@ -64,7 +62,7 @@ namespace SocketHandler
                 connectionManager.onReceiveData += onReceiveData;
                 connectionManager.onCloseConnection += CloseConnection;
 
-                isRunning = true;
+                _isRunning = true;
             }
             catch (Exception e)
             {
@@ -74,7 +72,7 @@ namespace SocketHandler
 
         ~Client()
         {
-            IsRunning = false;
+            Stop();
         }
 
         /// <summary>
@@ -97,7 +95,7 @@ namespace SocketHandler
             {
                 connectionManager.onReceiveData -= onReceiveData;
                 connectionManager.onCloseConnection -= CloseConnection;
-                connectionManager.IsRunning = false;
+                connectionManager.Stop();
                 connectionManager = null;
             }
             if (clientSocket != null)
