@@ -38,11 +38,7 @@ namespace SocketHandler
 
         public void Stop()
         {
-            _isRunning = false;
-            if (receiveData != null)
-            {
-                CloseConnection(null);
-            }
+            CloseConnection(null);
         }
 
         /// <summary>
@@ -56,6 +52,7 @@ namespace SocketHandler
             connectedAddr = ((IPEndPoint)socket.RemoteEndPoint).Address;
             receiveData = new Thread(StartReceivingData);
             receiveData.Start();
+            _isRunning = true;
             Debug("Started new socket controller");
         }
 
@@ -75,18 +72,15 @@ namespace SocketHandler
                 {
                     byte[] buffer = new byte[16];
                     int numBytes = socket.Receive(buffer, 16, SocketFlags.None);
-                    if (numBytes == 1 && buffer[0] == 0)
-                    {
-                        Stop();
-                    }
+                    if (numBytes == 0) Stop();
 
                     string data = Encoding.Unicode.GetString(buffer, 0, numBytes);
-                    string bufferString = buffer[0].ToString();
+                    string bufferString = ((int)buffer[0]).ToString();
                     for (int i = 1; i < numBytes; ++i)
                     {
-                        bufferString += "," + buffer[i];
+                        bufferString += "," + ((int)buffer[i]).ToString();
                     }
-                    Debug(data + ": " + bufferString);
+                    Debug(string.Format("{0}: {1}|{2}", data, numBytes, bufferString));
 
                     // Parse the data for end message identifiers until the end of the data is reached.
                     bool foundEndline = true;
@@ -158,16 +152,23 @@ namespace SocketHandler
         /// <param name="e">The exception that caused this function to be called. Can be null.</param>
         private void CloseConnection(Exception e)
         {
+            if (!_isRunning) return;
+            _isRunning = false;
+
             Debug("Connection was closed");
-            if (receiveData != null)
-            {
-                receiveData.Abort();
-                receiveData = null;
-            }
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
             }
+            try
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+            }
+            catch (Exception)
+            {
+            }
+            receiveData.Abort();
         }
 
         private void Debug(string s)

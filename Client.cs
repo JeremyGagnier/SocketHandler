@@ -8,7 +8,6 @@ namespace SocketHandler
     {
         public const bool DEBUG = true;
 
-        private Socket clientSocket = null;
         private Controller connectionManager = null;
 
         /// <summary>
@@ -34,11 +33,7 @@ namespace SocketHandler
 
         public void Stop()
         {
-            _isRunning = false;
-            if (clientSocket != null)
-            {
-                CloseConnection(null);
-            }
+            CloseConnection(null);
         }
 
         /// <summary>
@@ -87,33 +82,17 @@ namespace SocketHandler
 
         /// <summary>
         /// Shuts down the client connection.
-        /// This cleans up the controller and the socket, as well as calls onCloseConnection.
         /// </summary>
         private void CloseConnection(Exception e)
         {
-            if (connectionManager != null)
-            {
-                connectionManager.onReceiveData -= onReceiveData;
-                connectionManager.onCloseConnection -= CloseConnection;
-                connectionManager.Stop();
-                connectionManager = null;
-            }
-            if (clientSocket != null)
-            {
-                try
-                {
-                    clientSocket.Shutdown(SocketShutdown.Both);
-                    clientSocket.Close();
-                    clientSocket = null;
-                }
-                catch (Exception)
-                {
-                }
-            }
+            if (!_isRunning) return;
+            _isRunning = false;
+
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
             }
+            connectionManager.Stop();
         }
 
         private void Debug(string s)

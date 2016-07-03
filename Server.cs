@@ -36,11 +36,7 @@ namespace SocketHandler
 
         public void Stop()
         {
-            _isRunning = false;
-            if (serverSocket != null)
-            {
-                CloseConnection(null);
-            }
+            CloseConnection(null);
         }
 
         /// <summary>
@@ -128,28 +124,15 @@ namespace SocketHandler
         /// </summary>
         private void CloseConnection(Exception e)
         {
+            if (!_isRunning) return;
+            _isRunning = false;
+
             Debug("Connection was closed");
-            if (listenerThread != null)
-            {
-                listenerThread.Abort();
-                listenerThread = null;
-            }
-            if (serverSocket != null)
-            {
-                try
-                {
-                    serverSocket.Shutdown(SocketShutdown.Both);
-                    serverSocket.Close();
-                    serverSocket = null;
-                }
-                catch (Exception)
-                {
-                }
-            }
             if (onCloseConnection != null)
             {
                 onCloseConnection(e);
             }
+            listenerThread.Abort();
         }
 
         static void Debug(string s)
