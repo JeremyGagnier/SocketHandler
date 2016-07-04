@@ -94,7 +94,10 @@ namespace SocketHandler
                                 message += data.Substring(0, i);    // Don't keep the end message identifier
                                 data = data.Substring(i + 1, data.Length - (i + 1));
                                 Debug("Received Message: " + message);
-                                onReceiveData(message);
+                                if (onReceiveData != null)
+                                {
+                                    onReceiveData(message);
+                                }
                                 message = "";
                                 foundEndline = true;
                                 break;

@@ -14,7 +14,17 @@ namespace SocketHandler
         /// Gets called when the connection manager's onReceiveData function is called.
         /// Use this to handle incoming client data.
         /// </summary>
-        public Action<string> onReceiveData = null;
+        public Action<string> onReceiveData
+        {
+            get
+            {
+                return connectionManager.onReceiveData;
+            }
+            set
+            {
+                connectionManager.onReceiveData = value;
+            }
+        }
 
         /// <summary>
         /// Gets called when the client socket is shut down.
@@ -54,7 +64,6 @@ namespace SocketHandler
                 clientSocket.Connect(remoteEP);
 
                 connectionManager = new Controller(clientSocket);
-                connectionManager.onReceiveData += onReceiveData;
                 connectionManager.onCloseConnection += CloseConnection;
 
                 _isRunning = true;
