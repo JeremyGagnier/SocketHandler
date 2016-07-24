@@ -10,6 +10,8 @@ namespace SocketHandler
 
         private Controller connectionManager = null;
 
+        public Socket socket = null;
+
         /// <summary>
         /// Gets called when the connection manager's onReceiveData function is called.
         /// Use this to handle incoming client data.
@@ -59,11 +61,11 @@ namespace SocketHandler
                 //IPHostEntry host = Dns.GetHostEntry("progressiongames.servegame.org");
                 IPEndPoint remoteEP = new IPEndPoint(ip, port);
 
-                Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                clientSocket.Connect(remoteEP);
+                socket.Connect(remoteEP);
 
-                connectionManager = new Controller(clientSocket);
+                connectionManager = new Controller(socket);
                 connectionManager.onCloseConnection += CloseConnection;
 
                 _isRunning = true;
