@@ -132,6 +132,13 @@ namespace SocketHandler
             {
                 onCloseConnection(e);
             }
+            try
+            {
+                serverSocket.Close();
+            }
+            catch (Exception)
+            {
+            }
             listenerThread.Abort();
         }
 
