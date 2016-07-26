@@ -15,12 +15,6 @@ namespace SocketHandler
         /// </summary>
         public Action<byte[]> onReceiveData = null;
 
-        /// <summary>
-        /// Gets called when the controller is shut down.
-        /// This helps notify the program if an error happened or if the connection was terminated.
-        /// </summary>
-        public Action<Exception> onCloseConnection = null;
-
         private UdpClient socket = null;
         private Thread receiveData = null;
         private IPEndPoint endpoint = null;
@@ -138,10 +132,6 @@ namespace SocketHandler
             _isRunning = false;
 
             Debug("Connection was closed");
-            if (onCloseConnection != null)
-            {
-                onCloseConnection(e);
-            }
             try
             {
                 socket.Close();
