@@ -3,19 +3,21 @@ using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace SocketHandler
 {
-    public class UDPController
+    public class UDPServer
     {
-        public const bool DEBUG = true;
+        private const bool DEBUG = true;
 
-        public Action<byte[]> onReceiveData = null;
+        private Dictionary<IPEndPoint, Action<byte[]>> onReceiveData =
+            new Dictionary<IPEndPoint, Action<byte[]>>();
 
+        private int port;
         private UdpClient socket = null;
         private Thread receiveData = null;
-        private IPEndPoint endpoint = null;
-
+        
         private bool _isRunning = false;
         public bool isRunning
         {
@@ -30,29 +32,40 @@ namespace SocketHandler
             CloseConnection(null);
         }
 
-        public UDPController(Socket tcpSocket)
+        public UDPServer(int port)
         {
-            endpoint = (IPEndPoint)tcpSocket.RemoteEndPoint;
-            socket = new UdpClient((IPEndPoint)tcpSocket.LocalEndPoint);
-            socket.Connect(endpoint);
+            this.port = port;
+            socket = new UdpClient(port);
             receiveData = new Thread(StartReceivingData);
             receiveData.Start();
             _isRunning = true;
-            Debug("Started new UDP controller");
+            Debug("Started UDP server");
         }
 
-        ~UDPController()
+        ~UDPServer()
         {
             Stop();
+        }
+        
+        public void ListenToEndPoint(IPEndPoint endpoint, Action<byte[]> onMessage)
+        {
+            onReceiveData[endpoint] = onMessage;
+        }
+
+        public void ForgetEndPoint(IPEndPoint endpoint)
+        {
+            onReceiveData.Remove(endpoint);
         }
 
         private void StartReceivingData()
         {
             try
             {
+                IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, port);
                 while (true)
                 {
                     byte[] buffer = socket.Receive(ref endpoint);
+                    if (!onReceiveData.ContainsKey(endpoint)) continue;
 
                     string data = Encoding.Unicode.GetString(buffer);
                     string bufferString = ((int)buffer[0]).ToString();
@@ -62,7 +75,7 @@ namespace SocketHandler
                     }
                     Debug(string.Format("{0}: {1}|{2}", data, buffer.Length, bufferString));
 
-                    onReceiveData(buffer);
+                    onReceiveData[endpoint](buffer);
                     Thread.Sleep(0);
                 }
             }
@@ -82,7 +95,7 @@ namespace SocketHandler
             }
         }
 
-        public void SendData(byte[] data)
+        public void SendData(IPEndPoint endpoint, byte[] data)
         {
             try
             {
@@ -92,7 +105,7 @@ namespace SocketHandler
                     bufferString += "," + ((int)data[i]).ToString();
                 }
                 Debug("Sending Data: " + bufferString);
-                socket.Send(data, data.Length);
+                socket.Send(data, data.Length, endpoint);
             }
             catch (SocketException e)
             {
@@ -126,7 +139,7 @@ namespace SocketHandler
         {
             if (DEBUG)
             {
-                Console.WriteLine("UDP " + endpoint.Address.ToString() + ": " + s);
+                Console.WriteLine("UDP SERVER: " + s);
             }
         }
     }
