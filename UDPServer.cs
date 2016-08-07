@@ -39,7 +39,7 @@ namespace SocketHandler
             receiveData = new Thread(StartReceivingData);
             receiveData.Start();
             _isRunning = true;
-            Debug("Started UDP server");
+            Debug("Started");
         }
 
         ~UDPServer()
@@ -59,39 +59,49 @@ namespace SocketHandler
 
         private void StartReceivingData()
         {
-            try
+            // This outer while loop keeps the UDP server going after socket errors
+            while (_isRunning)
             {
-                IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, port);
-                while (true)
+                try
                 {
-                    byte[] buffer = socket.Receive(ref endpoint);
-                    if (!onReceiveData.ContainsKey(endpoint)) continue;
-
-                    string data = Encoding.Unicode.GetString(buffer);
-                    string bufferString = ((int)buffer[0]).ToString();
-                    for (int i = 1; i < buffer.Length; ++i)
+                    IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, port);
+                    while (true)
                     {
-                        bufferString += "," + ((int)buffer[i]).ToString();
-                    }
-                    Debug(string.Format("{0}: {1}|{2}", data, buffer.Length, bufferString));
+                        byte[] buffer = socket.Receive(ref endpoint);
+                        if (!onReceiveData.ContainsKey(endpoint)) continue;
 
-                    onReceiveData[endpoint](buffer);
-                    Thread.Sleep(0);
+                        string bufferString = ((int)buffer[0]).ToString();
+                        for (int i = 1; i < buffer.Length; ++i)
+                        {
+                            bufferString += "," + ((int)buffer[i]).ToString();
+                        }
+                        Debug(string.Format("Got data: {0}|{1}", buffer.Length, bufferString));
+
+                        onReceiveData[endpoint](buffer);
+                        Thread.Sleep(0);
+                    }
                 }
-            }
-            catch (SocketException e)
-            {
-                Debug("Encountered a socket error when trying to receive data:\n" + e.ToString());
-                CloseConnection(e);
-            }
-            catch (ThreadAbortException)
-            {
-                Debug("Receive Data thread shut down successfully.");
-            }
-            catch (Exception e)
-            {
-                Debug("Receive Data thread encountered an error:\n" + e.ToString());
-                CloseConnection(e);
+                catch (SocketException e)
+                {
+                    Debug("Encountered a socket error when trying to receive data:\n" + e.ToString());
+                }
+                catch (ThreadAbortException e)
+                {
+                    if (!_isRunning)
+                    {
+                        Debug("Receive Data thread shut down successfully.");
+                    }
+                    else
+                    {
+                        Debug("Receive Data thread aborted without closing connection");
+                        CloseConnection(e);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug("Receive Data thread encountered an error:\n" + e.ToString());
+                    CloseConnection(e);
+                }
             }
         }
 
