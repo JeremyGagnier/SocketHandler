@@ -49,6 +49,7 @@ namespace SocketHandler
         
         public void ListenToEndPoint(IPEndPoint endpoint, Action<byte[]> onMessage)
         {
+            Debug("Now listening on " + endpoint.Address.ToString());
             onReceiveData[endpoint] = onMessage;
         }
 
