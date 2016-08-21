@@ -4,11 +4,13 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 
+using UnityEngine;
+
 namespace SocketHandler
 {
     public class UDPController
     {
-        public const bool DEBUG = true;
+        public static bool DEBUG = false;
 
         public Action<byte[]> onReceiveData = null;
 
@@ -129,7 +131,8 @@ namespace SocketHandler
         {
             if (DEBUG)
             {
-                Console.WriteLine("UDP " + endpoint.Address.ToString() + ": " + s);
+                //Console.WriteLine("UDP " + endpoint.Address.ToString() + ": " + s);
+                UnityEngine.Debug.Log("UDP " + endpoint.Address.ToString() + ": " + s);
             }
         }
     }

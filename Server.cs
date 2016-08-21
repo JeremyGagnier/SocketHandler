@@ -7,7 +7,7 @@ namespace SocketHandler
 {
     public class Server
     {
-        private const bool DEBUG = true;
+        private static bool DEBUG = true;
         private const int MAX_INCOMING_CONNECTION_QUEUE = 16;
 
         private Socket serverSocket = null;

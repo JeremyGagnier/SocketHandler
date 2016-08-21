@@ -2,11 +2,13 @@
 using System.Net;
 using System.Net.Sockets;
 
+using UnityEngine;
+
 namespace SocketHandler
 {
     public class Client
     {
-        public const bool DEBUG = true;
+        public static bool DEBUG = false;
 
         private Controller connectionManager = null;
 
@@ -113,7 +115,8 @@ namespace SocketHandler
         {
             if (DEBUG)
             {
-                Console.WriteLine("CLIENT: " + s);
+                //Console.WriteLine("CLIENT: " + s);
+                UnityEngine.Debug.Log("CLIENT: " + s);
             }
         }
     }

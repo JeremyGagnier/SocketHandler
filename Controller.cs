@@ -4,11 +4,13 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 
+using UnityEngine;
+
 namespace SocketHandler
 {
     public class Controller
     {
-        public const bool DEBUG = true;
+        public static bool DEBUG = false;
 
         /// <summary>
         /// This will be called when the socket receives data.
@@ -181,7 +183,8 @@ namespace SocketHandler
         {
             if (DEBUG)
             {
-                Console.WriteLine(connectedAddr.ToString() + ": " + s);
+                //Console.WriteLine(connectedAddr.ToString() + ": " + s);
+                UnityEngine.Debug.Log(connectedAddr.ToString() + ": " + s);
             }
         }
     }
