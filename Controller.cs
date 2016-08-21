@@ -155,7 +155,10 @@ namespace SocketHandler
         /// <param name="e">The exception that caused this function to be called. Can be null.</param>
         private void CloseConnection(Exception e)
         {
-            if (!_isRunning) return;
+            if (!_isRunning)
+            {
+                return;
+            }
             _isRunning = false;
 
             Debug("Connection was closed");

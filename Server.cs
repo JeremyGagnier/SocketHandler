@@ -124,7 +124,10 @@ namespace SocketHandler
         /// </summary>
         private void CloseConnection(Exception e)
         {
-            if (!_isRunning) return;
+            if (!_isRunning)
+            {
+                return;
+            }
             _isRunning = false;
 
             Debug("Connection was closed");

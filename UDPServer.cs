@@ -69,7 +69,10 @@ namespace SocketHandler
                     while (true)
                     {
                         byte[] buffer = socket.Receive(ref endpoint);
-                        if (!onReceiveData.ContainsKey(endpoint)) continue;
+                        if (!onReceiveData.ContainsKey(endpoint))
+                        {
+                            continue;
+                        }
 
                         string bufferString = ((int)buffer[0]).ToString();
                         for (int i = 1; i < buffer.Length; ++i)
@@ -132,7 +135,10 @@ namespace SocketHandler
 
         private void CloseConnection(Exception e)
         {
-            if (!_isRunning) return;
+            if (!_isRunning)
+            {
+                return;
+            }
             _isRunning = false;
 
             Debug("Connection was closed");
